@@ -310,10 +310,13 @@ def restore_params(
         mesh = jax.sharding.Mesh(jax.devices(), ("x",))
         sharding = jax.sharding.NamedSharding(mesh, jax.sharding.PartitionSpec())
 
+    print(f"Restoring params from {params_path}...")
     with ocp.PyTreeCheckpointer() as ckptr:
+        print("Reading metadata...")
         metadata = ckptr.metadata(params_path)
         item = {"params": metadata["params"]}
 
+        print("Restoring...")
         params = ckptr.restore(
             params_path,
             ocp.args.PyTreeRestore(
@@ -323,6 +326,7 @@ def restore_params(
                 ),
             ),
         )["params"]
+        print("Restored.")
 
     # If the params were saved with `save_state` during openpi training, every key path will end with "value", which is
     # added by `nnx.State`. We remove the "value" suffix here and always return what NNX calls a "pure dict".
